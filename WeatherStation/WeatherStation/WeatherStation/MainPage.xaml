@@ -1,0 +1,53 @@
+﻿<Page
+    x:Class="WeatherStation.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WeatherStation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Width="1920" Height="1080">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="75" />
+            <ColumnDefinition Width="75" />
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="125" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="3" FontSize="36" Margin="90,15,15,15" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Altitude:" />
+        <TextBlock Name="Altitude" Grid.ColumnSpan="3" Grid.Row="3" Margin="90,15,15,15" FontSize="36" HorizontalAlignment="Right" VerticalAlignment="Top" Text="0m" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="3" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="-698m" />
+        <ProgressBar Name="Altimeter" Grid.ColumnSpan="3" Grid.Row="3" Margin="128,15,50,35" VerticalAlignment="Bottom" Minimum="-698" Maximum="5575" Value="{Binding WeatherShield.Altitude}" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="3" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="5575m" />
+
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="4" FontSize="36" Margin="90,15,15,15" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Humidty:" />
+        <TextBlock Name="Humidty" Grid.ColumnSpan="3" Grid.Row="4" Margin="90,15,15,15" FontSize="36" HorizontalAlignment="Right" VerticalAlignment="Top" Text="0.00%RH" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="4" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="0%RH" />
+        <ProgressBar Name="Hygrometer" Grid.ColumnSpan="3" Grid.Row="4" Margin="120,15,57,35" VerticalAlignment="Bottom" Minimum="0" Maximum="100" Value="{Binding WeatherShield.Humidity}" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="4" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="100%RH" />
+
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="5" FontSize="36" Margin="90,15,15,15" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Pressure:" />
+        <TextBlock Name="Pressure" Grid.ColumnSpan="3" Grid.Row="5" Margin="90,15,15,15" FontSize="36" HorizontalAlignment="Right" VerticalAlignment="Top" Text="80.0000kPa" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="5" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="50kPa" />
+        <ProgressBar Name="Barometer" Grid.ColumnSpan="3" Grid.Row="5" Margin="120,15,50,35" VerticalAlignment="Bottom" Minimum="50" Maximum="110" Value="80" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="5" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="110kPa" />
+
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="6" FontSize="36" Margin="90,15,15,15" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Temperature:" />
+        <TextBlock Name="Temperature" Grid.ColumnSpan="3" Grid.Row="6" Margin="90,15,15,15" FontSize="36" HorizontalAlignment="Right" VerticalAlignment="Top" Text="0.00C" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="6" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="-40C" />
+        <ProgressBar Name="Thermometer" Grid.ColumnSpan="3" Grid.Row="6" Margin="113,15,40,35" VerticalAlignment="Bottom" Minimum="-40" Maximum="125" Value="{Binding WeatherShield.Temperature}" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="6" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="125C" />
+
+        <TextBox Name="Status" Background="DarkGray" Grid.Column="3" Grid.RowSpan="8" HorizontalAlignment="Center" VerticalAlignment="Bottom" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollMode="Auto" Margin="15,15,15,165" Padding="10,10,10,10" Width="700" Height="550" IsEnabled="False" AcceptsReturn="True" TextChanged="Status_TextChanged"/>
+    </Grid>
+</Page>
