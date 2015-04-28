@@ -11,6 +11,8 @@ using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 using Windows.System.Threading;
 
+using WeatherStationTask.Sparkfun;
+
 namespace WeatherStationTask
 {
     public sealed class WeatherData
@@ -77,11 +79,15 @@ namespace WeatherStationTask
         private readonly int port = 50001;
         private WeatherData weatherData = new WeatherData();
         private readonly int i2cReadIntervalSeconds = 2;
+        private WeatherShield shield = new WeatherShield();
 
         public async void Run(IBackgroundTaskInstance taskInstance)
         {
             // Ensure our background task remains running
             taskDeferral = taskInstance.GetDeferral();
+
+            // Initialize WeatherShield
+            await shield.BeginAsync();
 
             // Create a timer-initiated ThreadPool task to read data from I2C
             i2cTimer = ThreadPoolTimer.CreatePeriodicTimer(PopulateWeatherData, TimeSpan.FromSeconds(i2cReadIntervalSeconds));
@@ -98,11 +104,15 @@ namespace WeatherStationTask
         {
             weatherData.TimeStamp = DateTime.Now.ToLocalTime().ToString();
 
-            //weatherData.Altitude = 
-            //weatherData.BarometricPressure = 
-            //weatherData.CelsiusTemperature = 
-            //weatherData.FahrenheitTemperature = 
-            //weatherData.Humidity = 
+            shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.High);
+
+            weatherData.Altitude = shield.Altitude;
+            weatherData.BarometricPressure = shield.Pressure;
+            weatherData.CelsiusTemperature = shield.Temperature;
+            weatherData.FahrenheitTemperature = (weatherData.CelsiusTemperature * 9 / 5) + 32;
+            weatherData.Humidity = shield.Humidity;
+
+            shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
 
             // Push the WeatherData local/cloud storage
         }
