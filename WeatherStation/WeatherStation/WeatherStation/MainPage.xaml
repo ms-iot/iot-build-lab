@@ -5,13 +5,13 @@
     xmlns:local="using:WeatherStation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="1920" Height="1080">
+    mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="75" />
             <ColumnDefinition Width="75" />
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="400" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -24,6 +24,10 @@
             <RowDefinition Height="125" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <TextBlock FontSize="36" Grid.ColumnSpan="3" Grid.Row="2" Margin="90,15,15,15" VerticalAlignment="Top" Text="Timestamp:" />
+        <TextBlock Name="TimeStamp" FontSize="36"  Grid.ColumnSpan="3" Grid.Row="2" Margin="90,15,15,15" VerticalAlignment="Bottom" Text="00:00:00 AM" />
+
         <TextBlock Grid.ColumnSpan="3" Grid.Row="3" FontSize="36" Margin="90,15,15,15" HorizontalAlignment="Left" VerticalAlignment="Top" Text="Altitude:" />
         <TextBlock Name="Altitude" Grid.ColumnSpan="3" Grid.Row="3" Margin="90,15,15,15" FontSize="36" HorizontalAlignment="Right" VerticalAlignment="Top" Text="0m" />
         <TextBlock Grid.ColumnSpan="3" Grid.Row="3" FontSize="12" Margin="80,15,5,30" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="-698m" />

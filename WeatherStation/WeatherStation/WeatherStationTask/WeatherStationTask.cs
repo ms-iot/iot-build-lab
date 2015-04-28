@@ -3,11 +3,13 @@ using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Windows.ApplicationModel.Background;
 using Windows.Networking.Sockets;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Threading;
 
@@ -71,7 +73,7 @@ namespace WeatherStationTask
         }
     }
 
-    public sealed class ServerTask : IBackgroundTask
+    public sealed partial class ServerTask : IBackgroundTask
     {
         private BackgroundTaskDeferral taskDeferral;
         private ThreadPoolTimer i2cTimer;
@@ -80,11 +82,16 @@ namespace WeatherStationTask
         private WeatherData weatherData = new WeatherData();
         private readonly int i2cReadIntervalSeconds = 2;
         private WeatherShield shield = new WeatherShield();
+        private Mutex mutex;
+        private string mutexId = "WeatherStation";
 
         public async void Run(IBackgroundTaskInstance taskInstance)
         {
             // Ensure our background task remains running
             taskDeferral = taskInstance.GetDeferral();
+
+            // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
+            mutex = new Mutex(false, mutexId);
 
             // Initialize WeatherShield
             await shield.BeginAsync();
@@ -102,19 +109,57 @@ namespace WeatherStationTask
 
         private void PopulateWeatherData(ThreadPoolTimer timer)
         {
-            weatherData.TimeStamp = DateTime.Now.ToLocalTime().ToString();
+            bool hasMutex = false;
 
-            shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.High);
+            try
+            {
+                hasMutex = mutex.WaitOne(1000);
+                if (hasMutex)
+                {
+                    weatherData.TimeStamp = DateTime.Now.ToLocalTime().ToString();
 
-            weatherData.Altitude = shield.Altitude;
-            weatherData.BarometricPressure = shield.Pressure;
-            weatherData.CelsiusTemperature = shield.Temperature;
-            weatherData.FahrenheitTemperature = (weatherData.CelsiusTemperature * 9 / 5) + 32;
-            weatherData.Humidity = shield.Humidity;
+                    shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.High);
 
-            shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
+                    weatherData.Altitude = shield.Altitude;
+                    weatherData.BarometricPressure = shield.Pressure;
+                    weatherData.CelsiusTemperature = shield.Temperature;
+                    weatherData.FahrenheitTemperature = (weatherData.CelsiusTemperature * 9 / 5) + 32;
+                    weatherData.Humidity = shield.Humidity;
 
-            // Push the WeatherData local/cloud storage
+                    shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
+
+                    // Push the WeatherData local/cloud storage
+                    WriteDataToIsolatedStorage();
+                }
+            }
+            finally
+            {
+                if (hasMutex)
+                {
+                    mutex.ReleaseMutex();
+                }
+            }
+        }
+
+        async private void WriteDataToIsolatedStorage()
+        {
+            // We have exlusive access to the mutex so can safely wipe the transfer file
+            Windows.Globalization.DateTimeFormatting.DateTimeFormatter formatter = new Windows.Globalization.DateTimeFormatting.DateTimeFormatter("longtime");
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            StorageFile transferFile = await localFolder.CreateFileAsync("DataFile.txt", CreationCollisionOption.ReplaceExisting);
+
+            using (var stream = await transferFile.OpenStreamForWriteAsync())
+            {
+                StreamWriter writer = new StreamWriter(stream);
+
+                writer.WriteLine(weatherData.TimeStamp);
+                writer.WriteLine(weatherData.Altitude.ToString());
+                writer.WriteLine(weatherData.BarometricPressure.ToString());
+                writer.WriteLine(weatherData.CelsiusTemperature.ToString());
+                writer.WriteLine(weatherData.FahrenheitTemperature.ToString());
+                writer.WriteLine(weatherData.Humidity.ToString());
+                writer.Flush();
+            }
         }
 
         private void OnCanceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
