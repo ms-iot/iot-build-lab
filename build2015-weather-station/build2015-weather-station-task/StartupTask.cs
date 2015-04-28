@@ -32,7 +32,7 @@ namespace build2015_weather_station_task
             new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ab", "Altitude", "m"),
             new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ac", "Humidity", "%RH"),
             new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ad", "Pressure", "kPa"),
-            new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ae", "Temperature", "C"),
+            //TODO: Add your code here. [HINT: Add another sensor for Temperature with the measurement as Celcius with a unique GUID]
         };
 
         public async void Run(IBackgroundTaskInstance taskInstance)
@@ -50,7 +50,7 @@ namespace build2015_weather_station_task
             localSettings.Key = "iQFNbyWTYRBwypMtPmpfJVz+NBgR32YHrQC0ZSvId20=";
             localSettings.DisplayName = GetHostName();
             localSettings.Organization = "IoT Build Lab";
-            localSettings.Location = "USA";
+            localSettings.Location = "San Francisco, CA";
 
             SaveSettings();
 
@@ -178,13 +178,7 @@ namespace build2015_weather_station_task
             }
 
             // Sending the temperature data
-            sensor = sensors.Find(item => item.measurename == "Temperature");
-            if (sensor != null)
-            {
-                sensor.value = weatherData.CelsiusTemperature;
-                sensor.timecreated = time;
-                sendMessage(sensor.ToJson());
-            }
+            //TODO: Add your code here. [HINT: Send the "Temperature" data from the weatherData]
         }
     }
 }
