@@ -27,6 +27,7 @@ namespace build2015_weather_station_task
 
         // Hard coding guid for sensors. Not an issue for this particular application which is meant for testing and demos
         private List<ConnectTheDotsSensor> sensors = new List<ConnectTheDotsSensor> {
+            //TODO: Replace the GUID's below with your own unique identifiers [HINT: If it is not unique, it will conflict with other devices]
             //Format for a new sensor is as follows:
             //new ConnectTheDotsSensor("YOUR_GUID_HERE", "VALUE_DESCRIPTOR", "UNIT_OF_MEASUREMENT");
             new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ab", "Altitude", "m"),
@@ -44,13 +45,13 @@ namespace build2015_weather_station_task
             mutex = new Mutex(false, mutexId);
 
             // Initialize ConnectTheDots Settings
-            localSettings.ServicebusNamespace = "iotbuildlab-ns";
+            localSettings.ServicebusNamespace = "iotOSCONlab-ns";
             localSettings.EventHubName = "ehdevices";
             localSettings.KeyName = "D1";
-            localSettings.Key = "iQFNbyWTYRBwypMtPmpfJVz+NBgR32YHrQC0ZSvId20=";
+            localSettings.Key = "y3gtCVxZ2XnrMBQ7uEBARN7NUJhyDQBsyaXGzrBSh5M=";
             localSettings.DisplayName = GetHostName();
-            localSettings.Organization = "IoT Build Lab";
-            localSettings.Location = "San Francisco, CA";
+            localSettings.Organization = "IoT OSCON Lab";
+            localSettings.Location = "Portland, OR";
 
             SaveSettings();
 
