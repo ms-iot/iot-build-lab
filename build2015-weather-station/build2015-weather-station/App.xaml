@@ -1,0 +1,8 @@
+﻿<Application
+    x:Class="build2015_weather_station.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:build2015_weather_station"
+    RequestedTheme="Dark">
+
+</Application>
