@@ -39,7 +39,7 @@ namespace build2015_weather_station_task
 
             // Start the server
             server = new HttpServer(port);
-            var asyncAction = ThreadPool.RunAsync((w) => { server.StartServer(weatherData); });
+            var asyncAction = ThreadPool.RunAsync((w) => { server.StartServer(shield, weatherData); });
 
             // Task cancellation handler, release our deferral there 
             taskInstance.Canceled += OnCanceled;

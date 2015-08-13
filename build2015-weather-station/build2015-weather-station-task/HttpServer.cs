@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 
+using build2015_weather_station_task.Sparkfun;
+using Windows.Devices.Gpio;
+
 namespace build2015_weather_station_task
 {
     public sealed class HttpServer : IDisposable
@@ -14,6 +17,7 @@ namespace build2015_weather_station_task
         private int defaultPort = 50001;
         private readonly StreamSocketListener sock;
         private WeatherData weatherData;
+        private WeatherShield weatherShield;
 
         public HttpServer(int serverPort)
         {
@@ -22,14 +26,16 @@ namespace build2015_weather_station_task
             sock.ConnectionReceived += (s, e) => ProcessRequestAsync(e.Socket);
         }
 
-        public async void StartServer(WeatherData w)
+        public async void StartServer(WeatherShield shield, WeatherData data)
         {
             await sock.BindServiceNameAsync(defaultPort.ToString());
-            weatherData = w;
+            weatherShield = shield;
+            weatherData = data;
         }
 
         private async void ProcessRequestAsync(StreamSocket socket)
         {
+            weatherShield.GreenLEDPin.Write(GpioPinValue.High);
             // Read in the HTTP request, we only care about type 'GET'
             StringBuilder request = new StringBuilder();
             using (IInputStream input = socket.InputStream)
@@ -51,6 +57,7 @@ namespace build2015_weather_station_task
                 string[] requestParts = requestMethod.Split(' ');
                 await WriteResponseAsync(requestParts, output);
             }
+            weatherShield.GreenLEDPin.Write(GpioPinValue.Low);
         }
 
         private async Task WriteResponseAsync(string[] requestTokens, IOutputStream outstream)
