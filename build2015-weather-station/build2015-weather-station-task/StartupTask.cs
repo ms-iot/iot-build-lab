@@ -49,8 +49,8 @@ namespace build2015_weather_station_task
             localSettings.KeyName = "D1";
             localSettings.Key = "iQFNbyWTYRBwypMtPmpfJVz+NBgR32YHrQC0ZSvId20=";
             localSettings.DisplayName = GetHostName();
-            localSettings.Organization = "IoT Build Lab";
-            localSettings.Location = "USA";
+            localSettings.Organization = "IoT Solutions World Congress";
+            localSettings.Location = "Barcelona, ES";
 
             SaveSettings();
 
