@@ -26,6 +26,10 @@ namespace build2015_weather_station_task
             private const byte CTRL_REG1 = 0x26;
             private const byte OUT_P_MSB = 0x01;
 
+            // Control Flags
+            private bool available = false;
+            private bool enable = false;
+
             // I2C Devices
             private I2cDevice htdu21d;  // Humidity and temperature sensor
             private I2cDevice mpl3115a2;  // Altitue, pressure and temperature sensor
@@ -66,6 +70,25 @@ namespace build2015_weather_station_task
                  * Get the default GpioController
                  */
                 GpioController gpio = GpioController.GetDefault();
+
+                /*
+                 * Test to see if the GPIO controller is available.
+                 *
+                 * If the GPIO controller is not available, this is
+                 * a good indicator the app has been deployed to a
+                 * computing environment that is not capable of
+                 * controlling the weather shield. Therefore we
+                 * will disable the weather shield functionality to
+                 * handle the failure case gracefully. This allows
+                 * the invoking application to remain deployable
+                 * across the Universal Windows Platform.
+                 */
+                if ( null == gpio )
+                {
+                    available = false;
+                    enable = false;
+                    return;
+                }
 
                 /*
                  * Initialize the blue LED and set to "off"
@@ -130,6 +153,71 @@ namespace build2015_weather_station_task
                 mpl3115a2_connection.SharingMode = I2cSharingMode.Shared;
 
                 mpl3115a2 = await I2cDevice.FromIdAsync(deviceId, mpl3115a2_connection);
+
+                /*
+                 * Test to see if the I2C devices are available.
+                 *
+                 * If the I2C devices are not available, this is
+                 * a good indicator the weather shield is either
+                 * missing or configured incorrectly. Therefore we
+                 * will disable the weather shield functionality to
+                 * handle the failure case gracefully. This allows
+                 * the invoking application to remain deployable
+                 * across the Universal Windows Platform.
+                 *
+                 * NOTE: For a more detailed description of the I2C
+                 * transactions used for testing below, please
+                 * refer to the "Raw___" functions provided below.
+                 */
+                if (null == mpl3115a2)
+                {
+                    available = false;
+                    enable = false;
+                    return;
+                }
+                else
+                {
+                    byte[] reg_data = new byte[1];
+
+                    try
+                    {
+                        mpl3115a2.WriteRead(new byte[] { CTRL_REG1 }, reg_data);
+                        reg_data[0] &= 0xFE;  // ensure SBYB (bit 0) is set to STANDBY
+                        reg_data[0] |= 0x02;  // ensure OST (bit 1) is set to initiate measurement
+                        mpl3115a2.Write(new byte[] { CTRL_REG1, reg_data[0] });
+                    }
+                    catch
+                    {
+                        available = false;
+                        enable = false;
+                        return;
+                    }
+                }
+
+                if (null == htdu21d)
+                {
+                    available = false;
+                    enable = false;
+                    return;
+                }
+                else
+                {
+                    byte[] i2c_temperature_data = new byte[3];
+
+                    try
+                    {
+                        htdu21d.WriteRead(new byte[] { SAMPLE_TEMPERATURE_HOLD }, i2c_temperature_data);
+                    }
+                    catch
+                    {
+                        available = false;
+                        enable = false;
+                        return;
+                    }
+                }
+
+                available = true;
+                enable = true;
             }
 
             /// <summary>
@@ -142,6 +230,8 @@ namespace build2015_weather_station_task
             {
                 get
                 {
+                    if (!enable) { return 0f; }
+
                     double pressure_Pa = Pressure;
 
                     // Calculate using US Standard Atmosphere 1976 (NASA)
@@ -149,6 +239,15 @@ namespace build2015_weather_station_task
 
                     return Convert.ToSingle(altitude_m);
                 }
+            }
+
+            /// <summary>
+            /// The current state of the shield
+            /// </summary>
+            public bool Enable
+            {
+                get { return enable; }
+                set { enable = (available && value); }
             }
 
             /// <summary>
@@ -161,6 +260,8 @@ namespace build2015_weather_station_task
             {
                 get
                 {
+                    if (!enable) { return 0f; }
+
                     ushort raw_humidity_data = RawHumidity;
                     double humidity_RH = (((125.0 * raw_humidity_data) / 65536) - 6.0);
 
@@ -178,6 +279,8 @@ namespace build2015_weather_station_task
             {
                 get
                 {
+                    if (!enable) { return 0f; }
+
                     uint raw_pressure_data = RawPressure;
                     double pressure_Pa = ((raw_pressure_data >> 6) + (((raw_pressure_data >> 4) & 0x03) / 4.0));
 
@@ -195,6 +298,8 @@ namespace build2015_weather_station_task
             {
                 get
                 {
+                    if (!enable) { return 0f; }
+
                     ushort raw_temperature_data = RawTemperature;
                     double temperature_C = (((175.72 * raw_temperature_data) / 65536) - 46.85);
 
