@@ -14,12 +14,12 @@ namespace build2015_weather_station_task
             TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
         }
 
-        public string TimeStamp { get; set; }
         public float Altitude { get; set; }
+        public float BarometricPressure { get; set; }
         public float CelsiusTemperature { get; set; }
         public float FahrenheitTemperature { get; set; }
         public float Humidity { get; set; }
-        public float BarometricPressure { get; set; }
+        public string TimeStamp { get; set; }
 
         public string JSON
         {

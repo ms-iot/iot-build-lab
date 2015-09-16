@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using Windows.ApplicationModel.Background;
-using Windows.Storage;
 using Windows.System.Threading;
 
 using build2015_weather_station_task.Sparkfun;
@@ -71,9 +69,6 @@ namespace build2015_weather_station_task
                     weatherData.Humidity = shield.Humidity;
 
                     shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
-
-                    // Push the WeatherData local/cloud storage
-                    WriteDataToIsolatedStorage();
                 }
             }
             finally
@@ -82,27 +77,6 @@ namespace build2015_weather_station_task
                 {
                     mutex.ReleaseMutex();
                 }
-            }
-        }
-
-        async private void WriteDataToIsolatedStorage()
-        {
-            // We have exlusive access to the mutex so can safely wipe the transfer file
-            Windows.Globalization.DateTimeFormatting.DateTimeFormatter formatter = new Windows.Globalization.DateTimeFormatting.DateTimeFormatter("longtime");
-            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-            StorageFile transferFile = await localFolder.CreateFileAsync("DataFile.txt", CreationCollisionOption.ReplaceExisting);
-
-            using (var stream = await transferFile.OpenStreamForWriteAsync())
-            {
-                StreamWriter writer = new StreamWriter(stream);
-
-                writer.WriteLine(weatherData.TimeStamp);
-                writer.WriteLine(weatherData.Altitude.ToString());
-                writer.WriteLine(weatherData.BarometricPressure.ToString());
-                writer.WriteLine(weatherData.CelsiusTemperature.ToString());
-                writer.WriteLine(weatherData.FahrenheitTemperature.ToString());
-                writer.WriteLine(weatherData.Humidity.ToString());
-                writer.Flush();
             }
         }
     }
