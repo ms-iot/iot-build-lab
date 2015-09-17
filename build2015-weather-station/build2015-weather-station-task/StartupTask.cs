@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Windows.ApplicationModel.Background;
+using Windows.Networking;
+using Windows.Networking.Connectivity;
 using Windows.System.Threading;
 
 using Microsoft.Maker.Sparkfun.WeatherShield;
@@ -16,10 +19,21 @@ namespace build2015_weather_station_task
         private Mutex mutex;
         private string mutexId = "WeatherStation";
         private readonly int port = 50001;
+        private ThreadPoolTimer SasTokenRenewTimer;
         private HttpServer server;
         private WeatherShield shield = new WeatherShield("I2C1", 6, 5);
         private BackgroundTaskDeferral taskDeferral;
         private WeatherData weatherData = new WeatherData();
+
+        // Hard coding guid for sensors. Not an issue for this particular application which is meant for testing and demos
+        private List<ConnectTheDotsSensor> sensors = new List<ConnectTheDotsSensor> {
+            //Format for a new sensor is as follows:
+            //new ConnectTheDotsSensor("YOUR_GUID_HERE", "VALUE_DESCRIPTOR", "UNIT_OF_MEASUREMENT");
+            new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ab", "Altitude", "m"),
+            new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ac", "Humidity", "%RH"),
+            new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ad", "Pressure", "kPa"),
+            new ConnectTheDotsSensor("2298a348-e2f9-4438-ab23-82a3930662ae", "Temperature", "C"),
+        };
 
         public async void Run(IBackgroundTaskInstance taskInstance)
         {
@@ -28,6 +42,17 @@ namespace build2015_weather_station_task
 
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
             mutex = new Mutex(false, mutexId);
+
+            // Initialize ConnectTheDots Settings
+            localSettings.ServicebusNamespace = "iotbuildlab-ns";
+            localSettings.EventHubName = "ehdevices";
+            localSettings.KeyName = "D1";
+            localSettings.Key = "iQFNbyWTYRBwypMtPmpfJVz+NBgR32YHrQC0ZSvId20=";
+            localSettings.DisplayName = GetHostName();
+            localSettings.Organization = "IoT Build Lab";
+            localSettings.Location = "USA";
+
+            SaveSettings();
 
             // Initialize WeatherShield
             await shield.BeginAsync();
@@ -41,6 +66,22 @@ namespace build2015_weather_station_task
 
             // Task cancellation handler, release our deferral there 
             taskInstance.Canceled += OnCanceled;
+
+            // Create a timer-initiated ThreadPool task to renew SAS token regularly
+            SasTokenRenewTimer = ThreadPoolTimer.CreatePeriodicTimer(RenewSasToken, TimeSpan.FromMinutes(15));
+        }
+
+        private string GetHostName()
+        {
+            foreach (HostName name in NetworkInformation.GetHostNames())
+            {
+                if (HostNameType.DomainName == name.Type)
+                {
+                    return name.DisplayName;
+                }
+            }
+
+            return "minwinpc";
         }
 
         private void OnCanceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
@@ -69,6 +110,9 @@ namespace build2015_weather_station_task
                     weatherData.Humidity = shield.Humidity;
 
                     shield.BlueLedPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
+
+                    // Push the WeatherData cloud storage (viewable at http://iotbuildlab.azurewebsites.net/)
+                    SendDataToConnectTheDots();
                 }
             }
             finally
@@ -77,6 +121,69 @@ namespace build2015_weather_station_task
                 {
                     mutex.ReleaseMutex();
                 }
+            }
+        }
+
+        private void RenewSasToken(ThreadPoolTimer timer)
+        {
+            bool hasMutex = false;
+
+            try
+            {
+                hasMutex = mutex.WaitOne(1000);
+                if (hasMutex)
+                {
+                    UpdateSasToken();
+                }
+            }
+            finally
+            {
+                if (hasMutex)
+                {
+                    mutex.ReleaseMutex();
+                }
+            }
+        }
+
+        private void SendDataToConnectTheDots()
+        {
+            ConnectTheDotsSensor sensor;
+            string time = DateTime.UtcNow.ToString("o");
+
+            // Send the altitude data
+            sensor = sensors.Find(item => item.measurename == "Altitude");
+            if (sensor != null)
+            {
+                sensor.value = weatherData.Altitude;
+                sensor.timecreated = time;
+                sendMessage(sensor.ToJson());
+            }
+
+            // Send the humidity data
+            sensor = sensors.Find(item => item.measurename == "Humidity");
+            if (sensor != null)
+            {
+                sensor.value = weatherData.Humidity;
+                sensor.timecreated = time;
+                sendMessage(sensor.ToJson());
+            }
+
+            // Sending the pressure data
+            sensor = sensors.Find(item => item.measurename == "Pressure");
+            if (sensor != null)
+            {
+                sensor.value = (weatherData.BarometricPressure / 1000);
+                sensor.timecreated = time;
+                sendMessage(sensor.ToJson());
+            }
+
+            // Sending the temperature data
+            sensor = sensors.Find(item => item.measurename == "Temperature");
+            if (sensor != null)
+            {
+                sensor.value = weatherData.CelsiusTemperature;
+                sensor.timecreated = time;
+                sendMessage(sensor.ToJson());
             }
         }
     }
