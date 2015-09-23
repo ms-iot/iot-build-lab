@@ -24,7 +24,7 @@ namespace build2015_weather_station
         private HttpClient weatherClient;
         private HttpBaseProtocolFilter weatherFilter = new HttpBaseProtocolFilter();
         //TODO: On the following line, replace "minwinpc" with the computer name of your IoT device (i.e. "http://<iot_device_name>:50001").
-        private Uri weatherUri = new Uri("http://minwinpc:50001");
+        private Uri weatherUri = new Uri("http://WeatherStation:50001");
 
         public MainPage()
         {
