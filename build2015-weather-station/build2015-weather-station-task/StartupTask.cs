@@ -3,7 +3,7 @@ using System.Threading;
 using Windows.ApplicationModel.Background;
 using Windows.System.Threading;
 
-using build2015_weather_station_task.Sparkfun;
+using Microsoft.Maker.Sparkfun.WeatherShield;
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
@@ -17,7 +17,7 @@ namespace build2015_weather_station_task
         private string mutexId = "WeatherStation";
         private readonly int port = 50001;
         private HttpServer server;
-        private WeatherShield shield = new WeatherShield();
+        private WeatherShield shield = new WeatherShield("I2C1", 6, 5);
         private BackgroundTaskDeferral taskDeferral;
         private WeatherData weatherData = new WeatherData();
 
@@ -60,7 +60,7 @@ namespace build2015_weather_station_task
                 {
                     weatherData.TimeStamp = DateTime.Now.ToLocalTime().ToString();
 
-                    shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.High);
+                    shield.BlueLedPin.Write(Windows.Devices.Gpio.GpioPinValue.High);
 
                     weatherData.Altitude = shield.Altitude;
                     weatherData.BarometricPressure = shield.Pressure;
@@ -68,7 +68,7 @@ namespace build2015_weather_station_task
                     weatherData.FahrenheitTemperature = (weatherData.CelsiusTemperature * 9 / 5) + 32;
                     weatherData.Humidity = shield.Humidity;
 
-                    shield.BlueLEDPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
+                    shield.BlueLedPin.Write(Windows.Devices.Gpio.GpioPinValue.Low);
                 }
             }
             finally

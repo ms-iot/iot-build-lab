@@ -95,7 +95,6 @@
     <Compile Include="StartupTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeatherData.cs" />
-    <Compile Include="WeatherShield.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />
@@ -111,6 +110,12 @@
     <SDKReference Include="WindowsIoT, Version=10.0.10240.0">
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\sparkfun-weather-shield\sparkfun-weather-shield\sparkfun-weather-shield.csproj">
+      <Project>{76f75707-6193-4286-bbe6-ef8025b8dcf7}</Project>
+      <Name>sparkfun-weather-shield</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

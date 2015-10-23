@@ -1,0 +1,3 @@
+[submodule "sparkfun-weather-shield"]
+	path = sparkfun-weather-shield
+	url = https://github.com/ms-iot/sparkfun-weather-shield.git

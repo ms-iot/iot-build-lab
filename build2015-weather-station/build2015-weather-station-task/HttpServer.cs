@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 
-using build2015_weather_station_task.Sparkfun;
+using Microsoft.Maker.Sparkfun.WeatherShield;
 using Windows.Devices.Gpio;
 
 namespace build2015_weather_station_task
@@ -35,7 +35,7 @@ namespace build2015_weather_station_task
 
         private async void ProcessRequestAsync(StreamSocket socket)
         {
-            weatherShield.GreenLEDPin.Write(GpioPinValue.High);
+            weatherShield.GreenLedPin.Write(GpioPinValue.High);
             // Read in the HTTP request, we only care about type 'GET'
             StringBuilder request = new StringBuilder();
             using (IInputStream input = socket.InputStream)
@@ -57,7 +57,7 @@ namespace build2015_weather_station_task
                 string[] requestParts = requestMethod.Split(' ');
                 await WriteResponseAsync(requestParts, output);
             }
-            weatherShield.GreenLEDPin.Write(GpioPinValue.Low);
+            weatherShield.GreenLedPin.Write(GpioPinValue.Low);
         }
 
         private async Task WriteResponseAsync(string[] requestTokens, IOutputStream outstream)
