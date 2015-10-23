@@ -21,7 +21,7 @@ namespace build2015_weather_station_task
         private readonly int port = 50001;
         private ThreadPoolTimer SasTokenRenewTimer;
         private HttpServer server;
-        private WeatherShield shield = new WeatherShield("I2C1", 6, 5);
+        private WeatherShield shield = new WeatherShield("I2C5", 2, 1);
         private BackgroundTaskDeferral taskDeferral;
         private WeatherData weatherData = new WeatherData();
 
