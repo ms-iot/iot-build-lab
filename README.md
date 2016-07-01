@@ -58,3 +58,7 @@ In order to set your app as default, you need to use a PowerShell remote session
 To make your app the default one, follow the steps highlighted at the end of [this](http://ms-iot.github.io/content/win10/samples/HelloWorld.htm) sample.
 
 
+
+===
+
+This project has adopted the [Microsoft Open Source Code of Conduct](http://microsoft.github.io/codeofconduct). For more information see the [Code of Conduct FAQ](http://microsoft.github.io/codeofconduct/faq.md) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments. 
